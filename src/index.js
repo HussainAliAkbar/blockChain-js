@@ -1,7 +1,3 @@
-// https://hackernoon.com/learn-blockchains-by-building-one-117428612f46
-const SHA256 = require("crypto-js/sha256");
-const axios = require('axios');
-const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const uuidv4 = require('uuid/v4');
@@ -9,14 +5,14 @@ const Blockchain = require('./blockchain');
 
 const app = express();
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 let blockChain = new Blockchain();
-//genesis block
+// genesis block
 blockChain.newBlock(100, 1);
 const nodeIdentifier = uuidv4();
 
 app.get('/mine', (req, res) => {
-  let lastBlock = blockChain.lastBlock()
+  let lastBlock = blockChain.lastBlock();
   let lastProof = lastBlock['proof'];
   console.log('last block: ', lastBlock);
   console.log('last proof: ', lastProof);
@@ -41,11 +37,11 @@ app.post('/transactions/new', (req, res) => {
   requiredFields.forEach(field => {
     if (!req.body[field]) {
       res.status(400);
-      res.send({message: 'required fields missing'});
+      res.send({ message: 'required fields missing' });
     }
   });
   let index = blockChain.newTransaction(req.body.sender, req.body.receiver, req.body.amount);
-  res.send({message: `transaction will be added to block: ${index}`});
+  res.send({ message: `transaction will be added to block: ${index}` });
 });
 
 app.get('/chain', (req, res) => {
@@ -59,7 +55,7 @@ app.post('/nodes/register', (req, res) => {
   let body = req.body.nodes;
   if (!body.length) {
     res.status(400);
-    res.send({message: 'please provide node addresses'});
+    res.send({ message: 'please provide node addresses' });
   }
   body.forEach(node => {
     blockChain.registerNodes(node);
@@ -70,7 +66,7 @@ app.post('/nodes/register', (req, res) => {
   });
 });
 
-app.get('/nodes/resolve', async (req,res) => {
+app.get('/nodes/resolve', async (req, res) => {
   let replaced = await blockChain.resolveConflict();
   if (replaced) {
     console.log('replaced chain in if: ', replaced);
@@ -81,7 +77,6 @@ app.get('/nodes/resolve', async (req,res) => {
       newChain: blockChain.chain
     });
   } else {
-
     console.log('not replaced chain: ', replaced);
     console.log('not replaced chain: ', blockChain.chain);
     res.send({

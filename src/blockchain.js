@@ -1,16 +1,15 @@
-const SHA256 = require("crypto-js/sha256");
+const SHA256 = require('crypto-js/sha256');
 const axios = require('axios');
 const _ = require('lodash');
 
 module.exports = class Blockchain {
-  constructor() {
+  constructor () {
     this.chain = [];
     this.currentTransactions = [];
     this.nodes = [];
   }
 
-
-  registerNodes(address) {
+  registerNodes (address) {
     /*
          Add a new node to the list of nodes
         :param address: <str> Address of node. Eg. 'http://192.168.0.5:5000'
@@ -24,7 +23,7 @@ module.exports = class Blockchain {
     }
   }
 
-  validChain(chain) {
+  validChain (chain) {
     /*
         Determine if a given blockchain is valid
         :param chain: <list> A blockchain
@@ -52,13 +51,13 @@ module.exports = class Blockchain {
       }
 
       lastBlock = block;
-      currentIndex+=1;
+      currentIndex += 1;
     }
     // console.log('returning true');
     return true;
   }
 
-  async resolveConflict() {
+  async resolveConflict () {
     // console.log();
     /*
         This is our Consensus Algorithm, it resolves conflicts
@@ -67,7 +66,7 @@ module.exports = class Blockchain {
      */
 
     let neighbours = this.nodes;
-    let newChain = undefined;
+    let newChain;
 
     // We're only looking for chains longer than ours
     let maxLength = this.chain.length;
@@ -83,15 +82,14 @@ module.exports = class Blockchain {
     // console.log(responses[0].data)
     responses.forEach(res => {
       let length = res.data.length;
-      let chain  = res.data.chain;
+      let chain = res.data.chain;
 
-      //Check if the length is longer and the chain is valid
+      // Check if the length is longer and the chain is valid
       if (length > maxLength && this.validChain(chain)) {
-        console.log('the other chain is valid')
+        console.log('the other chain is valid');
         maxLength = length;
         newChain = chain;
       }
-
     });
 
     if (newChain) {
@@ -107,7 +105,7 @@ module.exports = class Blockchain {
     return false;
   }
 
-  newBlock(proof, previousHash = null) {
+  newBlock (proof, previousHash = null) {
     /*
         Create a new Block in the Blockchain
         :param proof: <int> The proof given by the Proof of Work algorithm
@@ -120,16 +118,15 @@ module.exports = class Blockchain {
       // 'timestamp': new Date(),
       'transactions': this.currentTransactions,
       'proof': proof,
-      'previousHash': previousHash || this.hash(_.last(this.chain)),
+      'previousHash': previousHash || this.hash(_.last(this.chain))
     };
 
     this.currentTransactions = [];
     this.chain.push(block);
     return block;
-
   }
 
-  newTransaction(sender, receiver, amount) {
+  newTransaction (sender, receiver, amount) {
     /*
         Creates a new transaction to go into the next mined Block
         :param sender: <str> Address of the Sender
@@ -145,17 +142,16 @@ module.exports = class Blockchain {
     return this.lastBlock()['index'] + 1;
   }
 
-  lastBlock() {
+  lastBlock () {
     return _.last(this.chain);
   }
 
-
-  hash(block) {
+  hash (block) {
     // return SHA256(block.index + block.transactions + block.proof + block.previousHash).toString();
     return SHA256(block.index + block.timestamp + block.transactions + block.proof + block.previousHash).toString();
   }
 
-  proofOfWork(lastProof) {
+  proofOfWork (lastProof) {
     /*
         Simple Proof of Work Algorithm:
          - Find a number p' such that hash(pp') contains leading 4 zeroes, where p is the previous p'
@@ -166,13 +162,13 @@ module.exports = class Blockchain {
 
     let proof = 0;
     while (this.validProof(lastProof, proof) !== true) {
-      proof +=1;
+      proof += 1;
     }
     console.log('found proof');
     return proof;
   }
 
-  validProof(lastProof, proof) {
+  validProof (lastProof, proof) {
     /*
         Validates the Proof: Does hash(last_proof, proof) contain 4 leading zeroes?
         :param last_proof: <int> Previous Proof
@@ -183,8 +179,6 @@ module.exports = class Blockchain {
 
     return guess.substr(guess.length - 2) === '00'; // 2 is the difficulty
   }
-
-
 };
 
 const getUTCTimeString = () => Math.round(new Date().getTime() / 1000).toString();
