@@ -1,0 +1,42 @@
+version: '3.7'
+
+services:
+  node-1:
+    container_name: blockchain-node-1
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - PORT=3000
+    environment:
+      - PORT=3000
+    volumes:
+      - './:/app/'
+    ports:
+      - 3000:3000
+  node-2:
+    container_name: blockchain-node-2
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - PORT=3001
+    environment:
+      - PORT=3001
+    volumes:
+      - './:/app/'
+    ports:
+      - 3001:3001
+  node-3:
+    container_name: blockchain-node-3
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - PORT=3002
+    environment:
+      - PORT=3002
+    volumes:
+      - './:/app/'
+    ports:
+      - 3002:3002

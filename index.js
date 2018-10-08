@@ -276,5 +276,4 @@ app.get('/nodes/resolve', async (req,res) => {
   }
 });
 
-let port = +process.argv[2];
-app.listen(port, () => console.log('app listening on port: ', port));
+app.listen(process.env.PORT, () => console.log('app listening on port: ', process.env.PORT));
