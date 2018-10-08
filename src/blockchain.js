@@ -11,11 +11,6 @@ module.exports = class Blockchain {
   }
 
   registerNodes (address) {
-    /*
-         Add a new node to the list of nodes
-        :param address: <str> Address of node. Eg. 'http://192.168.0.5:5000'
-        :return: None
-     */
     if (!_.includes(this.nodes, address)) {
       console.log('adding new node');
       this.nodes.push(address);
@@ -25,11 +20,6 @@ module.exports = class Blockchain {
   }
 
   validChain (chain) {
-    /*
-        Determine if a given blockchain is valid
-        :param chain: <list> A blockchain
-        :return: <bool> True if valid, False if not
-     */
     let lastBlock = chain[0];
     let currentIndex = 1;
 
@@ -51,12 +41,6 @@ module.exports = class Blockchain {
   }
 
   async resolveConflict () {
-    /*
-        This is our Consensus Algorithm, it resolves conflicts
-        by replacing our chain with the longest one in the network.
-        :return: <bool> True if our chain was replaced, False if not
-     */
-
     let neighbours = this.nodes;
     let newChain;
 
@@ -94,12 +78,6 @@ module.exports = class Blockchain {
   }
 
   newBlock (proof, previousHash = null) {
-    /*
-        Create a new Block in the Blockchain
-        :param proof: <int> The proof given by the Proof of Work algorithm
-        :param previous_hash: (Optional) <str> Hash of previous Block
-        :return: <dict> New Block
-     */
     const block = {
       'index': this.chain.length + 1,
       'timestamp': utils.getUTCTimeString(),
@@ -114,13 +92,6 @@ module.exports = class Blockchain {
   }
 
   newTransaction (sender, receiver, amount) {
-    /*
-        Creates a new transaction to go into the next mined Block
-        :param sender: <str> Address of the Sender
-        :param recipient: <str> Address of the Recipient
-        :param amount: <int> Amount
-        :return: <int> The index of the Block that will hold this transaction
-    */
     this.currentTransactions.push({
       sender,
       receiver,
@@ -138,14 +109,6 @@ module.exports = class Blockchain {
   }
 
   proofOfWork (lastProof) {
-    /*
-        Simple Proof of Work Algorithm:
-         - Find a number p' such that hash(pp') contains leading 4 zeroes, where p is the previous p'
-         - p is the previous proof, and p' is the new proof
-        :param last_proof: <int>
-        :return: <int>
-     */
-
     let proof = 0;
     while (this.validProof(lastProof, proof) !== true) {
       proof += 1;
@@ -155,15 +118,7 @@ module.exports = class Blockchain {
   }
 
   validProof (lastProof, proof) {
-    /*
-        Validates the Proof: Does hash(last_proof, proof) contain 4 leading zeroes?
-        :param last_proof: <int> Previous Proof
-        :param proof: <int> Current Proof
-        :return: <bool> True if correct, False if not.
-     */
     let guess = SHA256(lastProof.toString() + proof.toString()).toString();
-
     return guess.substr(guess.length - 2) === '00'; // 2 is the difficulty
   }
 };
-

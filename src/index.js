@@ -6,11 +6,18 @@ const Blockchain = require('./blockchain');
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-let blockChain = new Blockchain();
-// genesis block
-blockChain.newBlock(100, 1);
 const nodeIdentifier = uuidv4();
 
+// setup a server
+app.listen(process.env.PORT, () => console.log('app listening on port: ', process.env.PORT));
+
+// instantiate a new blockchain
+let blockChain = new Blockchain();
+
+// genesis block
+blockChain.newBlock(100, 1);
+
+// mine a new block
 app.get('/mine', (req, res) => {
   let lastBlock = blockChain.lastBlock();
   let lastProof = lastBlock['proof'];
@@ -32,6 +39,7 @@ app.get('/mine', (req, res) => {
   });
 });
 
+// add a new transaction
 app.post('/transactions/new', (req, res) => {
   const requiredFields = ['sender', 'receiver', 'amount'];
   requiredFields.forEach(field => {
@@ -44,6 +52,7 @@ app.post('/transactions/new', (req, res) => {
   res.send({ message: `transaction will be added to block: ${index}` });
 });
 
+// get current blockChain
 app.get('/chain', (req, res) => {
   res.send({
     chain: blockChain.chain,
@@ -51,6 +60,7 @@ app.get('/chain', (req, res) => {
   });
 });
 
+// register a new node
 app.post('/nodes/register', (req, res) => {
   let body = req.body.nodes;
   if (!body.length) {
@@ -66,6 +76,7 @@ app.post('/nodes/register', (req, res) => {
   });
 });
 
+// resolve conflicts in the chain by coming to a consensus
 app.get('/nodes/resolve', async (req, res) => {
   let replaced = await blockChain.resolveConflict();
   if (replaced) {
@@ -85,5 +96,3 @@ app.get('/nodes/resolve', async (req, res) => {
     });
   }
 });
-
-app.listen(process.env.PORT, () => console.log('app listening on port: ', process.env.PORT));
