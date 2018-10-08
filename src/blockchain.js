@@ -1,6 +1,7 @@
 const SHA256 = require('crypto-js/sha256');
 const axios = require('axios');
 const _ = require('lodash');
+const utils = require('./utils');
 
 module.exports = class Blockchain {
   constructor () {
@@ -29,36 +30,27 @@ module.exports = class Blockchain {
         :param chain: <list> A blockchain
         :return: <bool> True if valid, False if not
      */
-    // console.log('validating chain: ', chain);
     let lastBlock = chain[0];
     let currentIndex = 1;
 
     while (currentIndex < chain.length) {
       let block = chain[currentIndex];
-      // console.log('last block: ', lastBlock);
-      // console.log('block: ', block);
-      // console.log('-----------');
       // Check that the hash of the block is correct
-      // console.log(this.hash(lastBlock));
       if (block['previousHash'] !== this.hash(lastBlock)) {
-        // console.log('returning false from 1st of');
         return false;
       }
       // check that proof of work is correct
       if (!this.validProof(lastBlock['proof'], block['proof'])) {
-        // console.log('returning false from 2nd if')
         return false;
       }
 
       lastBlock = block;
       currentIndex += 1;
     }
-    // console.log('returning true');
     return true;
   }
 
   async resolveConflict () {
-    // console.log();
     /*
         This is our Consensus Algorithm, it resolves conflicts
         by replacing our chain with the longest one in the network.
@@ -70,7 +62,6 @@ module.exports = class Blockchain {
 
     // We're only looking for chains longer than ours
     let maxLength = this.chain.length;
-    // console.log('length of this chain is: ', maxLength);
 
     let promises = [];
     for (let i = 0; i < neighbours.length; i++) {
@@ -79,7 +70,6 @@ module.exports = class Blockchain {
 
     let responses = await Promise.all(promises);
 
-    // console.log(responses[0].data)
     responses.forEach(res => {
       let length = res.data.length;
       let chain = res.data.chain;
@@ -94,8 +84,6 @@ module.exports = class Blockchain {
 
     if (newChain) {
       console.log('replacing old chain with new chain');
-      console.log('old chain: ', this.chain);
-      console.log('new chain: ', newChain);
       this.chain = newChain;
       console.log('replaced chain: ', this.chain);
       // this.chain = newChain;
@@ -114,8 +102,7 @@ module.exports = class Blockchain {
      */
     const block = {
       'index': this.chain.length + 1,
-      'timestamp': getUTCTimeString(),
-      // 'timestamp': new Date(),
+      'timestamp': utils.getUTCTimeString(),
       'transactions': this.currentTransactions,
       'proof': proof,
       'previousHash': previousHash || this.hash(_.last(this.chain))
@@ -147,7 +134,6 @@ module.exports = class Blockchain {
   }
 
   hash (block) {
-    // return SHA256(block.index + block.transactions + block.proof + block.previousHash).toString();
     return SHA256(block.index + block.timestamp + block.transactions + block.proof + block.previousHash).toString();
   }
 
@@ -181,4 +167,3 @@ module.exports = class Blockchain {
   }
 };
 
-const getUTCTimeString = () => Math.round(new Date().getTime() / 1000).toString();
