@@ -11,7 +11,7 @@ services:
     environment:
       - PORT=3000
     volumes:
-      - './:/app/'
+      - './src:/app/src'
     ports:
       - 3000:3000
   node-2:
@@ -24,7 +24,7 @@ services:
     environment:
       - PORT=3001
     volumes:
-      - './:/app/'
+      - './src:/app/src'
     ports:
       - 3001:3001
   node-3:
@@ -37,6 +37,6 @@ services:
     environment:
       - PORT=3002
     volumes:
-      - './:/app/'
+      - './src:/app/src'
     ports:
       - 3002:3002

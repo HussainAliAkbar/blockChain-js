@@ -13,4 +13,4 @@ COPY . .
 
 EXPOSE $PORT
 
-CMD ["nodemon", "./index.js"]
+CMD ["nodemon", "./src/index.js"]
