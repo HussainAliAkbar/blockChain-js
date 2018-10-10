@@ -21,10 +21,12 @@ blockChain.newBlock(100, 1);
 app.get('/mine', (req, res) => {
   let lastBlock = blockChain.lastBlock();
   let lastProof = lastBlock['proof'];
-  console.log('last block: ', lastBlock);
-  console.log('last proof: ', lastProof);
-  let proof = blockChain.proofOfWork(lastProof);
-  console.log('new proof: ', proof);
+  let lastHash = lastBlock['previousHash'];
+  // we are doing this to tie the transaction history with the proof
+  // this way no one would be able to rewrite the transaction history from scratch.
+  //  This way, proofs of work can not be recycled on other chains.
+  // for reference: https://medium.com/@schubert.konstantin/isnt-there-a-msitake-with-your-proof-of-work-30cf9467f0a5
+  let proof = blockChain.proofOfWork(lastProof + lastHash);
 
   blockChain.newTransaction('0', nodeIdentifier, 100000);
   const previousHash = blockChain.hash(lastBlock);

@@ -30,7 +30,14 @@ module.exports = class Blockchain {
         return false;
       }
       // check that proof of work is correct
-      if (!this.validProof(lastBlock['proof'], block['proof'])) {
+
+      // we are doing this to tie the transaction history with the proof
+      // this way no one would be able to rewrite the transaction history from scratch.
+      //  This way, proofs of work can not be recycled on other chains.
+      // for reference: https://medium.com/@schubert.konstantin/isnt-there-a-msitake-with-your-proof-of-work-30cf9467f0a5
+
+      let lastProof =lastBlock['proof'] + lastBlock['previousHash'];
+      if (!this.validProof(lastProof, block['proof'])) {
         return false;
       }
 
