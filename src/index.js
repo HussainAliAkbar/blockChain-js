@@ -9,7 +9,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const nodeIdentifier = uuidv4();
 
 // setup a server
-app.listen(process.env.PORT, () => console.log('app listening on port: ', process.env.PORT));
+app.listen(process.env.PORT, () => console.log('app listening on port: ', process.env.PORT, ', identifier: ', nodeIdentifier));
 
 // instantiate a new blockchain
 let blockChain = new Blockchain();
@@ -30,7 +30,7 @@ app.get('/mine', (req, res) => {
   const previousHash = blockChain.hash(lastBlock);
   console.log('previous hash while adding block: ', previousHash);
   const block = blockChain.newBlock(proof, previousHash);
-  res.send({
+  return res.send({
     message: 'new block forged',
     index: block['index'],
     transactions: block['transactions'],
@@ -40,21 +40,35 @@ app.get('/mine', (req, res) => {
 });
 
 // add a new transaction
-app.post('/transactions/new', (req, res) => {
-  const requiredFields = ['sender', 'receiver', 'amount'];
+app.post('/transactions/new', async (req, res) => {
+  const requiredFields = ['sender', 'receiver', 'amount', 'broadcast'];
+  let throwError = false;
   requiredFields.forEach(field => {
-    if (!req.body[field]) {
-      res.status(400);
-      res.send({ message: 'required fields missing' });
+    if (!req.body[field] && req.body[field] !== false) {
+      throwError = true;
     }
   });
-  let index = blockChain.newTransaction(req.body.sender, req.body.receiver, req.body.amount);
-  res.send({ message: `transaction will be added to block: ${index}` });
+  if (throwError) {
+    res.status(400);
+    return res.send({ message: 'required fields missing' });
+  }
+
+  let index;
+  try {
+    index = blockChain.newTransaction(req.body.sender, req.body.receiver, req.body.amount);
+    if (req.body.broadcast) {
+      await blockChain.broadcastTransaction(req.body.sender, req.body.receiver, req.body.amount);
+    }
+  } catch (e) {
+    res.status(500);
+    return res.send({ message: e.message });
+  }
+  return res.send({ message: `transaction will be added to block: ${index}` });
 });
 
 // get current blockChain
 app.get('/chain', (req, res) => {
-  res.send({
+  return res.send({
     chain: blockChain.chain,
     length: blockChain.chain.length
   });
@@ -65,12 +79,12 @@ app.post('/nodes/register', (req, res) => {
   let body = req.body.nodes;
   if (!body.length) {
     res.status(400);
-    res.send({ message: 'please provide node addresses' });
+    return res.send({ message: 'please provide node addresses' });
   }
   body.forEach(node => {
     blockChain.registerNodes(node);
   });
-  res.send({
+  return res.send({
     message: 'nodes added',
     totalNodes: blockChain.nodes.join(',')
   });
@@ -83,14 +97,14 @@ app.get('/nodes/resolve', async (req, res) => {
     console.log('replaced chain in if: ', replaced);
     console.log('replaced chain in if: ', blockChain.chain);
 
-    res.send({
+    return res.send({
       message: 'our chain was replaced',
       newChain: blockChain.chain
     });
   } else {
     console.log('not replaced chain: ', replaced);
     console.log('not replaced chain: ', blockChain.chain);
-    res.send({
+    return res.send({
       message: 'our chain is valid',
       chain: blockChain.chain
     });

@@ -100,6 +100,26 @@ module.exports = class Blockchain {
     return this.lastBlock()['index'] + 1;
   }
 
+  async broadcastTransaction (sender, receiver, amount) {
+    console.log('broadcasting transactions');
+    let neighbours = this.nodes;
+    let promises = [];
+    for (let i = 0; i < neighbours.length; i++) {
+      promises.push(axios.post(`http://${neighbours[i]}/transactions/new`, {
+        sender,
+        receiver,
+        amount,
+        broadcast: false
+      }));
+    }
+    try {
+      await Promise.all(promises);
+      return Promise.resolve(true);
+    } catch (e) {
+      return Promise.reject(new Error(`failed to broadcast transaction: ${e.response.data.message}`));
+    }
+  }
+
   lastBlock () {
     return _.last(this.chain);
   }

@@ -11,3 +11,4 @@
 ##### Steps to run without Docker:
 - PORT=5000 nodemon src/index.js (replace 5000 with a port of your choice )
 
+##### Credits for the original implementation:  [Link](https://hackernoon.com/learn-blockchains-by-building-one-117428612f46)
